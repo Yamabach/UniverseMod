@@ -1,0 +1,80 @@
+<Entity>
+	<!-- Entity definition file.
+		 Optional elements are mostly out-commented.
+		 Remember to insert appropriate values where specified,
+		 the mod will not load correctly until you do.
+		 Restart the game to load the entity once this file is completed.
+		 
+		 Values that should always be changed are marked with "TODO".
+		 
+		 See the documentation for further information on any of these elements.
+	-->
+	
+	<Name>SphericalGravity</Name>
+	<!-- ID of your entity. This ID must be unique among the entities that your mod adds.
+		 (It can conflict with other mods, the mod loader will handle this.)
+		 The easiest way of handling IDs is to just give your entities the IDs 1, 2, 3, etc. -->
+	<ID>10</ID>
+	
+	<!-- Optional. Enables debug mode.
+		 In debug mode, colliders are shown visually to assist in positioning them correctly.
+		 (Capsule colliders are shown as cubes, imagine their edges were rounded off.) -->
+	<Debug>false</Debug>
+	
+	<!-- Normally, when a level with a modded entity is loaded, but that entity is not loaded, the entity will be ignored.
+		 If the entity has a fallback specified here, the fallback entity is loaded instead in this scenario.
+	 
+		 Valid values are numeric entity IDs or the name of an entity, as returned by the .Name property of the Entity class.
+		 Only normal entities can be specified as fallbacks, not modded entities.-->
+	<Fallback>Sphere</Fallback>
+	
+	<Mesh name="sphere">
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="0.0" y="0.0" z="0.0" />
+		<Scale x="1.0" y="1.0" z="1.0" />
+	</Mesh>
+	
+	<Texture name="moon1" />
+	
+	<Icon name="sphere_thumb" />
+	
+	<!-- Optional. Placement offset. -->
+	<!-- <Offset x="0.0" y="0.0" z="0.0" /> -->
+	
+	<Category>Weather</Category>
+	
+	<Colliders>
+    <SphereCollider>
+      <Position x="0.0" y="0.0" z="0.0" />
+      <Radius>1.0</Radius>
+    </SphereCollider>
+	</Colliders>
+	
+	<!-- Optional, this is the default -->
+	<Scale canScale="true" uniformScale="true" />
+	
+	<!-- Whether the entity can be picked in events that act on entities (e.g. Activate). -->
+	<!-- Optional, default is true -->
+	<CanPick>true</CanPick>
+
+	<!-- Whether to show the Physics toggle in the properties of the entity.
+		 Disable it, if your entity shouldn't/can't respond to any physics. -->
+	<ShowPhysicsToggle>true</ShowPhysicsToggle>
+  <!--
+  <Destructible forceToBreak="1000">
+  </Destructible>
+	-->
+
+	<!-- Include to manually specify available event triggers on your entity. -->
+	<!-- You should always include at least LevelStart, Activate, Deactivate and Variable.
+		 These are also applied by default, when no triggers are specified. -->
+	<!-- You can also specify that the entity is compatible with specific triggers of other mods. -->
+	<Triggers>
+		<Trigger>LevelStart</Trigger>
+		<Trigger>Activate</Trigger>
+		<Trigger>Deactivate</Trigger>
+		<Trigger>Destroy</Trigger>
+		<Trigger>Ignite</Trigger>
+		<Trigger>Variable</Trigger>
+	</Triggers>
+</Entity>
