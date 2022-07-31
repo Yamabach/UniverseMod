@@ -9,24 +9,55 @@ using UnityEngine.Rendering;
 
 namespace UDspace
 {
+	/// <summary>
+	/// 重力源
+	/// </summary>
 	public abstract class Gravity : MonoBehaviour
 	{
 		public LevelEntity LE;
 		public GenericEntity GE;
 		public Rigidbody rigid;
-		public static List<PlayerData> Players; // 全プレイヤーのデータ
-		public static List<BlockBehaviour> Blocks; // 全ブロック（シミュ中）
-		public static List<BlockGravity> GravityBlocks; // 全ブロックのBlockGravity
-		//public static List<EntityDragController> Entities; // レベル中で物理のある全てのエンティティ
-		public static List<EntityDragController> SphericalGravities; // 自身を含む球体引力源エンティティ
-		public MToggle attractBlock; // ブロックを吸引する
+		/// <summary>
+		/// 全プレイヤーのデータ
+		/// </summary>
+		public static List<PlayerData> Players;
+		/// <summary>
+		/// 全ブロック（シミュ中）
+		/// </summary>
+		public static List<BlockBehaviour> Blocks;
+		/// <summary>
+		/// 全ブロックのBlockGravity
+		/// </summary>
+		public static List<BlockGravity> GravityBlocks;
+		//レベル中で物理のある全てのエンティティ
+		//public static List<EntityDragController> Entities;
+		/// <summary>
+		/// 自身を含む球体引力源エンティティ
+		/// </summary>
+		public static List<EntityDragController> SphericalGravities;
+		/// <summary>
+		/// ブロックを吸引する
+		/// </summary>
+		public MToggle attractBlock;
 		//public MToggle attractEntity; // エンティティを吸引する
-		public ForceMode mode = ForceMode.Impulse; // 加力の状態
-		public Rect debugWindowRect = new Rect(0f, 150f, 200f, 200f); // デバッグ用ウィンドウ
+		/// <summary>
+		/// 加力の状態
+		/// </summary>
+		public ForceMode mode = ForceMode.Impulse;
+		/// <summary>
+		/// デバッグ用ウィンドウ
+		/// </summary>
+		public Rect debugWindowRect = new Rect(0f, 150f, 200f, 200f);
 		public int debugWindowId;
-		private int sendMessageCycle = 10; // クライアントに見た目を描画する頻度（FixedUpdateの呼び出しごとに更新）
+		/// <summary>
+		/// クライアントに見た目を描画する頻度（FixedUpdateの呼び出しごとに更新）
+		/// </summary>
+		private int sendMessageCycle = 10;
 		private int sendMessageTime;
-		public int SendMessageTime // プロパティ
+		/// <summary>
+		/// 位置同期を行うスパン
+		/// </summary>
+		public int SendMessageTime
         {
             set
             {
@@ -39,6 +70,9 @@ namespace UDspace
 				return sendMessageTime;
             }
         }
+		/// <summary>
+		/// シミュ中であるかどうか
+		/// </summary>
 		public bool InSimulation
         {
             get
@@ -84,7 +118,9 @@ namespace UDspace
 		}
 		public virtual void DebugDisplay(int windowId) { }
 
-		// ブロックとエンティティの一覧を更新する
+		/// <summary>
+		/// ブロックとエンティティの一覧を更新する
+		/// </summary>
 		public static void UpdateBlocks()
 		{
 			Players = Playerlist.Players; // 全プレイヤーを取得
@@ -161,22 +197,59 @@ namespace UDspace
 				AddForce(entity);
 			}
 		}
+		/// <summary>
+		/// プレイヤーのカメラ方向の変更に必要なベクトルを追加する
+		/// </summary>
+		/// <param name="blockGravity"></param>
+		/// <param name="up"></param>
+		public void ChangePlayerCam(BlockGravity blockGravity, Vector3 up)
+        {
+			if (blockGravity.BB.BlockID == (int)BlockType.StartingBlock)
+			{
+				blockGravity.ReceivedForceList.Add(up);
+				//Mod.Log($"Add vector {up}");
+			}
+		}
 	}
+	/// <summary>
+	/// 球形重力源
+	/// </summary>
     public class SphericalGravity : Gravity
     {
-		public float gravitationBlock = 6.7e-1f; // ブロックの引力定数
+		/// <summary>
+		/// ブロックの引力定数
+		/// </summary>
+		public float gravitationBlock = 6.7e-1f;
 		//public float gravitationEntity = 6.7f; // ブロックの引力定数の10倍程度 // まだ足りなさそう
-		public MSlider density; // このオブジェクトの質量
-		public MSlider height; // 引力が適用される半径
-		public float threshold12 = 100; // テクスチャの解像度の切り替わり
-		public float threshold24 = 400; // テクスチャの解像度の切り替わり
-		public TexType texType; // 星の種類
+		/// <summary>
+		/// このオブジェクトの質量
+		/// </summary>
+		public MSlider density;
+		/// <summary>
+		/// 引力が適用される半径
+		/// </summary>
+		public MSlider height;
+		/// <summary>
+		/// テクスチャの解像度の切り替わり
+		/// </summary>
+		public float threshold12 = 100;
+		/// <summary>
+		/// テクスチャの解像度の切り替わり
+		/// </summary>
+		public float threshold24 = 400;
+		/// <summary>
+		/// 星の種類
+		/// </summary>
+		public TexType texType;
 		public MMenu type;
 		public List<string> texTypeList = new List<string>()
 		{
 			"Moon", "Venus",
 		};
-		public float Scale // スケールの最大値
+		/// <summary>
+		/// スケールの最大値
+		/// </summary>
+		public float Scale
         {
             get
             {
@@ -226,7 +299,10 @@ namespace UDspace
 				}
 			}
 		}
-		public ModTexture CurTex // 現在使われるべきテクスチャ
+		/// <summary>
+		/// 現在使われるべきテクスチャ
+		/// </summary>
+		public ModTexture CurTex
         {
             get
             {
@@ -245,7 +321,10 @@ namespace UDspace
             }
         }
 		public Material mat;
-		public EntityVisualController EVC; // テクスチャ制御？
+		/// <summary>
+		/// テクスチャ制御？
+		/// </summary>
+		public EntityVisualController EVC;
 
 		//public GameObject GravityRange; // 視覚的なわかりやすさのための球体
 		public override void Awake()
@@ -341,7 +420,9 @@ namespace UDspace
 			//attractEntity = GE.AddToggle(Mod.isJapanese ? "エンティティを吸引" : "Attract Entities", "attract-entity", false);
 			type = GE.AddMenu("texture-type", 0, texTypeList, true);
 		}
-		// メッシュとテクスチャを取得する
+		/// <summary>
+		/// メッシュとテクスチャを取得する
+		/// </summary>
 		public void InitializeModResources()
 		{
 			//public ModMesh MeshFull, MeshBase, MeshCrystal; // 全部、基部、クリスタル
@@ -353,24 +434,52 @@ namespace UDspace
 			venusTex2 = ModMesh.GetTexture("venus2");
 			venusTex4 = ModMesh.GetTexture("venus4");
 		}
+		/// <summary>
+		/// ブロックに対して重力を発生させる
+		/// </summary>
+		/// <param name="blockGravity"></param>
 		public override void AddForce(BlockGravity blockGravity)
 		{
-			// 一定条件で何もしない
-			if (blockGravity.rigid == null)
-			{
-				return;
-			}
-			if (blockGravity.zeroMass)// 質量0なら何もしない
-			{
-				return;
-			}
 			float radius = Scale + height.Value;
 			if ((transform.position - blockGravity.transform.position).sqrMagnitude > radius * radius) // 一定の距離以上なら計算しない
             {
 				return;
             }
 			float distance = Vector3.Distance(transform.position, blockGravity.transform.position);
-			Vector3 force = gravitationBlock * density.Value * blockGravity.rigid.mass / (distance * distance * distance) * (transform.position - blockGravity.transform.position);
+			// 与える加速度
+			Vector3 acceleration = gravitationBlock * density.Value / (distance * distance * distance) * (transform.position - blockGravity.transform.position);
+
+			// スタブロを引っ張っているなら、カメラのup方向を-forceにする
+			// up方向にだけ拘束をかけた場合、1自由度余ってしまい、rotationを決定できないという問題がある
+			// → upと-forceが正平行になるように回転？
+			// http://marupeke296.com/DXG_No16_AttitudeControl.html 参考になりそう
+			// 懸念：複数の重力源が同時にスタブロを引っ張った場合の処理
+			// それぞれの重力源で目標角をキューか何かに保存しておいて、LateUpdateでそれらの平均を取るとか？
+			// forceの大きさで平均を取るとそれっぽそう
+			ChangePlayerCam(blockGravity, -acceleration); // 暫定で -force
+
+			// 一定条件で何もしない
+			if (blockGravity.rigid == null)
+			{
+				return;
+			}
+			if (blockGravity.GetComponent<Rigidbody>() == null)
+            {
+				return;
+            }
+			if (blockGravity.zeroMass) // 質量0なら何もしない
+			{
+				return;
+			}
+			if (StatMaster.isClient) // クライアントなら何もしない
+            {
+				return;
+            }
+
+			// 与える力
+			Vector3 force = acceleration * blockGravity.rigid.mass;
+
+			// 反重力ブロックの場合の処理
 			if (blockGravity.isBalancingBlock)
             {
 				if (blockGravity.balance.isOn)
@@ -380,7 +489,12 @@ namespace UDspace
             }
 			blockGravity.rigid.AddForce(force, mode);
 			rigid.AddForce(-force, mode);
+
         }
+		/// <summary>
+		/// エンティティに対して重力を発生させる
+		/// </summary>
+		/// <param name="entity"></param>
 		public override void AddForce(EntityDragController entity)
 		{
 			// 一定条件で何もしない
@@ -479,21 +593,37 @@ namespace UDspace
 
         public override void AddForce(BlockGravity blockGravity)
         {
-			if (blockGravity.rigid == null)
-            {
-				return;
-            }
-			if (blockGravity.zeroMass)// 質量0なら何もしない
-			{
-				return;
-			}
 			var u = blockGravity.transform.position;
 			float dis = plane.GetDistanceToPoint(u); // 距離を計測
 			if (dis < 0 || distance.Value < dis)
             {
 				return;
             }
-			Vector3 force = -transform.up * blockGravity.rigid.mass * GBlock.Value;
+			// 与える加速度
+			Vector3 acceleration = -transform.up * GBlock.Value;
+			ChangePlayerCam(blockGravity, -acceleration);
+
+			if (blockGravity.rigid == null)
+			{
+				return;
+			}
+			if (blockGravity.GetComponent<Rigidbody>() == null)
+			{
+				return;
+			}
+			if (blockGravity.zeroMass)// 質量0なら何もしない
+			{
+				return;
+			}
+			if (StatMaster.isClient) // クライアントなら何もしない
+			{
+				return;
+			}
+
+			// 与える力
+			Vector3 force = acceleration * blockGravity.rigid.mass;
+
+			// 反重力ブロックの場合の処理
 			if (blockGravity.isBalancingBlock)
 			{
 				if (blockGravity.balance.isOn)
@@ -503,6 +633,7 @@ namespace UDspace
 			}
 			blockGravity.rigid.AddForce(force, mode);
 			//rigid.AddForce(-force, mode);
+
 			return;
         }
         public override void AddForce(List<BlockGravity> blockGravities)
@@ -637,15 +768,7 @@ namespace UDspace
 
 		public override void AddForce(BlockGravity blockGravity)
 		{
-			if (blockGravity.rigid == null)
-			{
-				return;
-			}
-			if (blockGravity.zeroMass)// 質量0なら何もしない
-			{
-				return;
-			}
-			// 距離と軸への射影を取得する
+			// 距離と、軸への射影を取得する
 			float length = Vector3.Dot(transform.up, blockGravity.transform.position - transform.position);
 			float dis = Vector3.Distance(blockGravity.transform.position, length * transform.up + transform.position);
 			if (dis < distanceMin.Value || distanceMax.Value < dis)
@@ -653,7 +776,31 @@ namespace UDspace
 				return;
             }
 
-			Vector3 force = -(length * transform.up + transform.position - blockGravity.transform.position).normalized * blockGravity.rigid.mass * GBlock.Value;
+			// 与える加速度
+			Vector3 acceleration = -(length * transform.up + transform.position - blockGravity.transform.position).normalized * GBlock.Value;
+			ChangePlayerCam(blockGravity, -acceleration);
+
+			if (blockGravity.rigid == null)
+			{
+				return;
+			}
+			if (blockGravity.GetComponent<Rigidbody>() == null)
+			{
+				return;
+			}
+			if (blockGravity.zeroMass)// 質量0なら何もしない
+			{
+				return;
+			}
+			if (StatMaster.isClient) // クライアントなら何もしない
+			{
+				return;
+			}
+
+			// 与える力
+			Vector3 force = acceleration * blockGravity.rigid.mass;
+
+			// 反重力ブロックの場合の処理
 			if (blockGravity.isBalancingBlock)
 			{
 				if (blockGravity.balance.isOn)
@@ -663,6 +810,7 @@ namespace UDspace
 			}
 			blockGravity.rigid.AddForce(force, mode);
 			//rigid.AddForce(-force, mode);
+
 			return;
 		}
 		public override void AddForce(List<BlockGravity> blockGravities)

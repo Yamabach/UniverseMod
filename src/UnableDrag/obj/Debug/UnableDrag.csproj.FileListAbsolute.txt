@@ -1,4 +1,3 @@
-C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\obj\Debug\UnableDrag.csprojAssemblyReference.cache
 C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\UnableDrag.dll
 C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\UnableDrag.pdb
 C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\Assembly-CSharp.dll
@@ -42,3 +41,8 @@ D:\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\Unabl
 D:\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\Ionic.Zip.Unity.dll
 D:\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\Newtonsoft.Json.dll
 D:\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\System.Runtime.Serialization.dll
+C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\Ookii.Dialogs.dll
+C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\Ionic.Zip.Unity.dll
+C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\Newtonsoft.Json.dll
+C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\bin\Debug\System.Runtime.Serialization.dll
+C:\Program Files (x86)\Steam\steamapps\common\Besiege\Besiege_Data\Mods\UnableDrag Project\src\UnableDrag\obj\Debug\UnableDrag.csproj.AssemblyReference.cache

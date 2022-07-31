@@ -67,6 +67,9 @@ namespace UDspace
 	public class AddScriptManager : SingleInstance<AddScriptManager>
 	{
 		public override string Name { get { return "Add Script Manager"; } }
+		/// <summary>
+		/// 回転抵抗も無効にするかどうか
+		/// </summary>
 		public bool isUnableAxialDrag
 		{
 			set; get;
@@ -195,7 +198,10 @@ namespace UDspace
 			}
 		}
 	}
-	public abstract class AbstractBlockScript : MonoBehaviour //ブロック基本
+	/// <summary>
+	/// ブロック基本
+	/// </summary>
+	public abstract class AbstractBlockScript : MonoBehaviour
 	{
 		[Obsolete]
 		public Action<XDataHolder> BlockDataLoadEvent;
@@ -207,7 +213,7 @@ namespace UDspace
 		public bool CombatUtilities { set; get; }
 
 
-		private void Awake()
+		protected void Awake()
 		{
 			BB = GetComponent<BlockBehaviour>();
 			SafeAwake();
@@ -222,7 +228,7 @@ namespace UDspace
 			}
 			DisplayInMapper(CombatUtilities);
 		}
-		private void Update()
+		protected void Update()
 		{
 			if (BB.isSimulating)
 			{
@@ -260,14 +266,14 @@ namespace UDspace
 				isFirstFrame = true;
 			}
 		}
-		private void FixedUpdate()
+		protected void FixedUpdate()
 		{
 			if (CombatUtilities && BB.isSimulating && !isFirstFrame)
 			{
 				SimulateFixedUpdateAlways();
 			}
 		}
-		private void LastUpdate()
+		protected void LateUpdate()
 		{
 			if (CombatUtilities && BB.isSimulating && !isFirstFrame)
 			{
@@ -599,25 +605,142 @@ namespace UDspace
 	public class BlockGravity : AbstractBlockScript
     {
 		public Rigidbody rigid;
+		/// <summary>
+		/// 質量を持たないか、質量が0の場合にtrue
+		/// </summary>
 		public bool zeroMass;
+		/// <summary>
+		/// 反重力ブロックを持つかどうか
+		/// </summary>
 		public AntiGravityBlock balance;
+		/// <summary>
+		/// 反重力ブロックであったとして、反重力がオンになっているかどうか
+		/// </summary>
 		public bool isBalancingBlock;
-		public bool hasParent;
+		/// <summary>
+		/// このブロックがスタブロであるかどうか
+		/// </summary>
+		public bool IsStartingBlock
+        {
+            get
+            {
+				return BB.BlockID == (int)BlockType.StartingBlock;
+            }
+        }
+		/// <summary>
+		/// ビルドゾーンの角度
+		/// </summary>
+		public Quaternion zoneRotation = Quaternion.identity;
+		/// <summary>
+		/// 重力源から受けている力の合計
+		/// →これの合計値がカメラの上方向になるように、カメラの姿勢制御に使用
+		/// </summary>
+		public List<Vector3> ReceivedForceList;
+		/// <summary>
+		/// このブロックのマシンのビルドゾーン（マルチ限定）
+		/// </summary>
+		public Transform buildingZone;
+		/// <summary>
+		/// シミュ時にビルドゾーンの角度が変更されたかどうか
+		/// </summary>
+		//public bool buildingZoneRotated { get; private set; }
+
 		public override void SafeAwake()
         {
 			balance = GetComponent<AntiGravityBlock>();
 			isBalancingBlock = balance != null;
 			SetZeroMass();
+			ReceivedForceList = new List<Vector3>();
+			if (StatMaster.isMP)
+			{
+				buildingZone = (BB.ParentMachine as ServerMachine).player.buildZone.transform;
+			}
         }
+		/// <summary>
+		/// zeroMassの値を更新
+		/// </summary>
 		public void SetZeroMass()
 		{
 			rigid = GetComponent<Rigidbody>();
 			zeroMass = rigid == null;
+
+			// rigidbodyがあったとして、質量が0ならtrue
 			if (!zeroMass)
 			{
 				zeroMass = rigid.mass == 0;
 			}
+			//Mod.Log($"rigid: {rigid != null}, zeroMass: {zeroMass}");
 		}
+		/// <summary>
+		/// シミュ終了時にビルドブロックで呼び出し
+		/// </summary>
+        public void OnEnable()
+        {
+			// シミュ終了時にビルドゾーンの角度を元に戻す処理が必要
+			// そのために、シミュ開始時のビルドゾーンの角度を保存することが必要 DONE
+
+			// 保存したシミュ開始時のビルドゾーンの角度に戻す
+			// 呼ばれない！←シミュ中はこのコンポーネントが無効化されており、変数が変化していないためと思われる
+			if (StatMaster.isMP && IsStartingBlock)
+			{
+				buildingZone.rotation = zoneRotation;
+				//Mod.Log($"OnEnable rotation = {zoneRotation}");
+			}
+			
+		}
+        public override void BuildingUpdate()
+        {
+            if (StatMaster.isMP && IsStartingBlock)
+            {
+				// ビルドゾーンの角度を保存
+				zoneRotation = buildingZone.rotation;
+            }
+        }
+        public override void OnSimulateStart()
+        {
+
+		}
+		/// <summary>
+		/// ビルドゾーンの回転によってカメラ酔いを軽減する
+		/// </summary>
+        public override void SimulateLateUpdateAlways()
+		{
+			//Mod.Log($"{MouseOrbit.Instance.targetType.ToString()}");
+
+			// 複数の重力源から力がかかった場合、その都度キューに力を保存しておいて、後でそれらの平均を取るとよさそう
+			if (ReceivedForceList.Count > 0 && IsStartingBlock && StatMaster.isMP)
+			{
+				// カメラの上方向に設定する方向
+				Vector3 Sum = Vector3.zero;
+				foreach (Vector3 force in ReceivedForceList)
+                {
+					Sum += force;
+                }
+
+				// 姿勢合わせ回転
+				// 姿勢回転軸ベクトルを算出（外積）
+				Vector3 rotateAxis = Vector3.Cross(buildingZone.up, Sum);
+
+				// 回転させる角度を計算
+				float rotateAngle = Vector3.Angle(buildingZone.up, Sum);
+
+				// 角度変化が1°以上の場合にカメラ角度変更
+				if (rotateAngle > 1f)
+				{
+					// 回転クォータニオンを生成
+					Quaternion rotateQuaternion = Quaternion.AngleAxis(rotateAngle, rotateAxis);
+
+					buildingZone.rotation = rotateQuaternion * buildingZone.rotation;
+
+					// クライアントがシミュ中にターゲットを切り替えるとTargetTypeがBlockでなくなってしまい、ビルドゾーンを参照できなくなってしまう
+					// →カメラのrotationを無理やり変えに行く？
+					MouseOrbit.Instance.rotation = rotateQuaternion * MouseOrbit.Instance.rotation;
+				}
+
+				// リスト初期化
+				ReceivedForceList.RemoveAll(x => true);
+			}
+        }
     }
 
 	// 引力を扱う時にエンティティを参照しやすくするためのクラス
